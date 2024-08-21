@@ -314,7 +314,7 @@
         if(session()->get('level')==5){
           ?>
             <li class="nav-item">
-  <a class="nav-link" href="barang" aria-controls="ui-basic">
+  <a class="nav-link" href="<?=base_url('home/barangjual')?>" aria-controls="ui-basic">
     <i class="fas fa-building menu-icon"></i>
     <span class="menu-title">Order Barang</span>
     
@@ -364,9 +364,17 @@
         if(session()->get('level')==1 || session()->get('level') == 2){
           ?>
             <li class="nav-item">
-  <a class="nav-link" href="barang" aria-controls="ui-basic">
+  <a class="nav-link" href="barangjual" aria-controls="ui-basic">
     <i class="fas fa-tag menu-icon"></i>
     <span class="menu-title">Barang Jual</span>
+    
+  </a>
+</li>
+
+<li class="nav-item">
+  <a class="nav-link" href="barangrestore" aria-controls="ui-basic">
+    <i class="fas fa-tag menu-icon"></i>
+    <span class="menu-title">Barang Jual restore</span>
     
   </a>
 </li>
@@ -453,7 +461,7 @@ if(session()->get('level') == 2) {
            <div class="collapse" id="icons">
   <ul class="nav flex-column sub-menu">
     <li class="nav-item">
-      <a class="nav-link" href="/hslogin">
+      <a class="nav-link" href="<?=base_url('home/activity')?>">
     <i class="fas fa-sign-in-alt"></i> Login
 </a>
 <!-- 

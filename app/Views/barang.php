@@ -97,6 +97,7 @@
       text-align: left;
     }
   </style>
+  
 </head>
 <body>
   <div class="main-panel">
@@ -167,6 +168,7 @@
                     <th>Kode Barang</th>
                     <th>Harga Satuan</th>
                     <th>Stok</th>
+                    <th>Aksi</th>
  <?php
         if(session()->get('level')==5  ){
           ?>
@@ -188,6 +190,10 @@
     <td><?= $flora->kode_brg ?></td>
     <td><?= $flora->harga ?></td>
     <td><?= $flora->stok ?></td>
+    <td><a href="<?=base_url('home/restoreupbarang/'.$flora->id_brg)?>"><button class="btn btn-info">restore<i class="fa fa-restore"></i></button></a>
+    <a href="<?=base_url('home/sdbarang/'.$flora->id_brg)?>"><button class="btn btn-info">Delete<i class="fa fa-restore"></i></button></a>
+    <a href="<?=base_url('home/rsbarang/'.$flora->id_brg)?>"><button class="btn btn-info">restore delete<i class="fa fa-restore"></i></button></a>
+  </td>
     <?php
         if(session()->get('level')==5  ){
           ?>

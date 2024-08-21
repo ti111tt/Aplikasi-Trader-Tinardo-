@@ -113,7 +113,7 @@
                             <td><?= $login->logout_time ?></td>
                         </tr>
                     <?php endforeach; ?>
-                </tbody>
+            </tbody>
             </table>
         </section>
 

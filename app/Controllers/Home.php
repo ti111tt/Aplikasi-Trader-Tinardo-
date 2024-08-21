@@ -6,6 +6,31 @@ use App\Models\M_trader;
 use CodeIgniter\I18n\Time;
 class Home extends BaseController
 {
+    private function log_activity($activity)
+    {
+		$model = new M_trader();
+        $data = [
+            'id_user'    => session()->get('id'),
+            'activity'   => $activity,
+			'timestamp' => date('Y-m-d H:i:s'),
+			'deleted' => ''
+        ];
+
+        $model->tambah('activity', $data);
+    }
+
+	private function log_activitys($activity, $id)
+    {
+		$model = new M_trader();
+        $data = [
+            'id_user'    => $id,
+            'activity'   => $activity,
+			'timestamp' => date('Y-m-d H:i:s'),
+			'delete' => '0'
+        ];
+
+        $model->tambah('activity', $data);
+    }
 	    public function index()
     {
         echo view('header');
@@ -16,12 +41,15 @@ class Home extends BaseController
 		public function dashboard()
 	{
 		 if(session()->get('level')>0) {
+        $this->log_activity('User membuka Dashboard'); ///log akt
 		 $model = new M_trader();
+         $where = array('id_pt' => 2);
+         $data['setting'] = $model->getwhere('pt',$where); 
 		 $where=array(
             'id_toko'=>1
         );
-         $data['setting'] = $model->getWhere('toko', $where);
-		echo view('header');
+        //  $data['setting'] = $model->getWhere('toko', $where);
+		echo view('header',$data);
         echo view('menu', $data);
         echo view('dashboard');
         echo view('footer');
@@ -34,17 +62,20 @@ class Home extends BaseController
 
 		public function pt()
 {
-    
+    $model = new M_trader();
+    $this->log_activity('User membuka pt'); 
+    $where = array('id_pt' => 2);
+    $data['setting'] = $model->getwhere('pt',$where);   
     $level = session()->get('level');
     
-    echo view('header');
-    echo view('menu');
+    echo view('header',$data);
+    echo view('menu',$data);
 
     if ($level == 1) { // Level 1 untuk admin
         // Mengambil data yang diperlukan untuk halaman 'pt'
         $model = new M_trader();
-        $where = array('id_pt' => session()->get('id'));
-        $data['manda'] = $model->tampil('pt');
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
 
         
         echo view('pt', $data);
@@ -134,6 +165,7 @@ public function history_hapus()
     }
 
 public function bayar() {
+    $this->log_activity('User melakukan pembayaran'); 
   $this->load->model('Transaksi_model');
   
   // Ambil data dari request POST
@@ -213,18 +245,78 @@ public function proses_payment() {
 
 public function barang()
 {
+    $this->log_activity('User membuka barang jual'); 
     if(session()->get('level') > 0) { 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         $where1 = array('user.id_user' => session()->get('id'));
         $where = array('id_brg' => session()->get('id'));
-
+        $this->log_activity('User membuka Barang');
         try {
-            $data['manda'] = $model->tampil('barang');
+            $data['manda'] = $model->tampilwherenull('barang');
             $data['jel'] = $model->jointigawhere('barang', 'transaksi', 'users', 'barang.id_transaksi=transaksi.id_transaksi', 'barang.id_users=users.id_users', 'barang.id_brg', $where1); 
             $where2 = array('keranjang.id_users' => session()->get('id_users'));
             $data['jol'] = $model->joinWherenel('keranjang', 'barang', 'keranjang.id_makanan=barang.id_brg', $where2);
-            echo view('header');
-            echo view('menu');
+            echo view('header',$data);
+            echo view('menu',$data);
+            echo view('barang', $data);
+            echo view('footer');
+        } catch (\Exception $e) {
+            // Handle or log the exception
+            echo $e->getMessage();
+        }
+    } else {
+        return redirect()->to('home/login');
+    }
+}
+
+public function barangjual()
+{
+    $this->log_activity('User membuka barang jual'); 
+    if(session()->get('level') > 0) { 
+        $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
+        $where1 = array('user.id_user' => session()->get('id'));
+        $where = array('id_brg' => session()->get('id'));
+        $this->log_activity('User membuka Barang');
+        try {
+            $data['manda'] = $model->tampilwherenull('barang');
+            $data['jel'] = $model->jointigawhere('barang', 'transaksi', 'users', 'barang.id_transaksi=transaksi.id_transaksi', 'barang.id_users=users.id_users', 'barang.id_brg', $where1); 
+            $where2 = array('keranjang.id_users' => session()->get('id_users'));
+            $data['jol'] = $model->joinWherenel('keranjang', 'barang', 'keranjang.id_makanan=barang.id_brg', $where2);
+            echo view('header',$data);
+            echo view('menu',$data);
+            echo view('barangjual', $data);
+            echo view('footer');
+        } catch (\Exception $e) {
+            // Handle or log the exception
+            echo $e->getMessage();
+        }
+    } else {
+        return redirect()->to('home/login');
+    }
+}
+
+public function barangrestore()
+{
+    $this->log_activity('User membuka barang jual'); 
+    if(session()->get('level') > 0) { 
+        $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
+        $where1 = array('user.id_user' => session()->get('id'));
+        $where = array('id_brg' => session()->get('id'));
+        $this->log_activity('User membuka Barang');
+        try {
+   
+            $data['manda'] = $model->tampilwhere('barang');
+            $data['jel'] = $model->jointigawhere('barang', 'transaksi', 'users', 'barang.id_transaksi=transaksi.id_transaksi', 'barang.id_users=users.id_users', 'barang.id_brg', $where1); 
+            $where2 = array('keranjang.id_users' => session()->get('id_users'));
+            $data['jol'] = $model->joinWherenel('keranjang', 'barang', 'keranjang.id_makanan=barang.id_brg', $where2);
+            echo view('header',$data);
+            echo view('menu',$data);
             echo view('barang', $data);
             echo view('footer');
         } catch (\Exception $e) {
@@ -266,17 +358,51 @@ public function aksi_keran()
     }
         
 }
+
+public function aksi_keranjang()
+    {
+        if(session()->get('level')>0){ 
+        $model = new M_trader();
+      
+        $harga= $this->request->getPost('item_name');
+        $item_id= $this->request->getPost('item_id');
+        $quan= $this->request->getPost('quantity');
+        $note= $this->request->getPost('note');
+        
+        $total = $harga * $quan;
+
+        $isi=array(
+            'id_makanan'=>$item_id,
+            'jumlah'=>$quan,
+            'id_users'=>session()->get('id_users'),
+            'total_harga'=>$total,
+            'catatan'=>$note,
+            
+        );
+
+
+
+        $model= new M_trader;
+        $model->tambah('keranjang', $isi);
+        return redirect()->to ('home/barangjual');
+    }else{
+        return redirect()->to('home/login');
+    }
+        
+}
 public function historypesanan()
 {
     if (session()->get('level') > 0) { 
         $model = new M_trader();
+         $where = array('id_pt' => 2);
+         $data['setting'] = $model->getwhere('pt',$where); 
         $userId = session()->get('id_users');
         $userLevel = session()->get('level');
 
         try {
             $data['hs'] = $model->getPesanan($userId, $userLevel);
-            echo view('header');
-            echo view('menu');
+            echo view('header',$data);
+            echo view('menu',$data);
             echo view('historypesanan', $data);
             // echo view('footer');
         } catch (\Exception $e) {
@@ -299,11 +425,12 @@ public function historypesanan()
             'stok' => $this->request->getPost('productStock'),
             'foto' => $this->_uploadImage() // Fungsi untuk meng-upload gambar
         );
+        
 
         // Menyimpan data ke database
         $this->m_trader->insert_barang($data);
 
-        return redirect()->to('/barang'); // Sesuaikan dengan URL tujuan
+        return redirect()->to('barang'); // Sesuaikan dengan URL tujuan
     }
 
     private function _uploadImage()
@@ -372,11 +499,15 @@ public function bm()
     {
         if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
+         $where = array('id_pt' => 2);
+         $data['setting'] = $model->getwhere('pt',$where); 
         $where=array('id_bm'=>session()->get('id'));
         $data ['manda'] = $model->tampil('barang_masuk'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('bm',$data);
         echo view('footer');
          }else{
@@ -388,11 +519,13 @@ public function bm()
 {
     if(session()->get('level') > 0) { 
         $model = new M_trader();
+         $where = array('id_pt' => 2);
+         $data['setting'] = $model->getwhere('pt',$where); 
         $where = array('id_bm' => session()->get('id'));
         $data['manda'] = $model->tampil('barang_masuk');
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('t_bm', $data);
         echo view('footer');
     } else {
@@ -435,6 +568,8 @@ public function show_detail($id_bm)
 {
     if (session()->get('level') == 1) {
         $model = new M_trader();
+         $where = array('id_pt' => 2);
+         $data['setting'] = $model->getwhere('pt',$where); 
         $data['flora'] = $model->getDetail('barang_masuk', $id_bm); // Sesuaikan nama metode dan model
 
         echo view('header');
@@ -464,6 +599,8 @@ public function delete_bm($id)
 {
     if (session()->get('level') > 0) {
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         $where = array('id_bm' => $id);
         $data['Manda'] = $model->getWhere('barang_masuk', $where);
         
@@ -482,11 +619,15 @@ public function laporanbm()
     {
          if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         $where=array('id_bm'=>session()->get('id'));
         $data ['manda'] = $model->tampil('barang_masuk'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('laporanbm',$data);
         echo view('footer');
          }else{
@@ -499,17 +640,20 @@ public function laporanbm()
 
 
 
+//captcha offline
 
 
 public function bk()
     {
         if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         $where=array('id_bk'=>session()->get('id'));
         $data ['manda'] = $model->tampil('barang_keluar'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('bk',$data);
         echo view('footer');
          }else{
@@ -520,11 +664,13 @@ public function bk()
 {
     if(session()->get('level') > 0) {
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where = array('id_bk' => session()->get('id'));
         $data['manda'] = $model->tampil('barang_keluar');
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('t_bk', $data);
         echo view('footer');
     } else {
@@ -567,11 +713,13 @@ public function aksi_tbk()
 {
     if (session()->get('level') > 0) {
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where = array('id_bk' => $id);
         $data['Manda'] = $model->getWhere('barang_keluar', $where);
         
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('update_bk', $data);
         echo view('footer');
 
@@ -584,11 +732,13 @@ public function aksi_tbk()
     {
          if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where=array('id_bk'=>session()->get('id'));
         $data ['manda'] = $model->tampil('barang_keluar'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('laporanbk',$data);
         echo view('footer');
          }else{
@@ -716,11 +866,13 @@ public function print_bk() {
 	{
 		 if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where=array('id_transaksi'=>session()->get('id'));
         $data ['manda'] = $model->tampil('transaksi'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('laporantransaksi',$data);
         echo view('footer');
          }else{
@@ -741,11 +893,13 @@ public function print_bk() {
     {
        if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where=array('id_hstran'=>session()->get('id_hstran'));
         $data ['manda'] = $model->tampil('hs_tran'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('hstran',$data);
         echo view('footer');
          }else{
@@ -768,11 +922,13 @@ public function karyawan()
     {
         if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         $where=array('id_kry'=>session()->get('id'));
         $data ['manda'] = $model->tampil('karyawan'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('karyawan',$data);
         echo view('footer');
          }else{
@@ -783,11 +939,13 @@ public function karyawan()
     {
          if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where=array('id_bk'=>session()->get('id'));
         $data ['manda'] = $model->tampil('karyawan'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('t_kry',$data);
         echo view('footer');
          }else{
@@ -831,11 +989,13 @@ public function karyawan()
 {
     if (session()->get('level') > 0) {
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where = array('id_kry' => $id);
         $data['Manda'] = $model->getWhere('karyawan', $where);
         
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('update_kry', $data);
         echo view('footer');
 
@@ -861,11 +1021,13 @@ public function pengiriman()
     {
         if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where);
         $where=array('id_pesanan'=>session()->get('id'));
         $data ['manda'] = $model->tampil('pesanan'); 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('pengiriman',$data);
         echo view('footer');
          }else{
@@ -914,7 +1076,8 @@ public function pengiriman()
   public function jadwal() {
     // Ensure user has the correct level to access this page
     if (session()->get('level') > 0) {
-        $model = new M_trader(); // Replace with your actual model
+        $model = new M_trader(); 
+        // Replace with your actual model
         $data['manda'] = $model->getAllPesanan(); // Fetch data
 
         return view('jadwal', $data); // Pass data to the view
@@ -974,6 +1137,8 @@ public function users()
 {
     if (session()->get('level') > 0) { 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         $where = array('id_users' => session()->get('id'));
 
         // Ambil data users
@@ -982,8 +1147,8 @@ public function users()
         // Ambil data levels untuk jabatan
         $data['levels'] = $model->tampil('level'); // Pastikan model `M_trader` punya method `tampil('level')`
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('users', $data);
         echo view('footer');
     } else {
@@ -1011,19 +1176,48 @@ public function aksireset()
         
         
     }
+
+    public function edit_pt()
+    {
+        $model = new M_trader();
+        $id = $this->request->getPost('id');
+        $pt = $this->request->getPost('nama_pt');
+        $uploadedFile = $this->request->getFile('logo');
+        $where = array('id_pt' => $id);
+        
+        // Initialize the array with non-file fields
+        $isi = array(
+            'nama_pt' => $pt,
+        );
+        
+        // Check if a file was uploaded and is valid
+        if ($uploadedFile && $uploadedFile->isValid() && !$uploadedFile->hasMoved()) {
+            $foto = $uploadedFile->getName();
+            $model->uploaded($uploadedFile); // Upload the new file
+            $isi['logo'] = $foto; // Add the new file name to the array data
+        }
+        
+        // Update the record in the database
+        $model->edit('pt', $isi, $where);
+    
+        return redirect()->to('Home/pt');
+    }
+    
    
 
      public function t_u()
     {
          if(session()->get('level')>0){ 
         $model = new M_trader();
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         $where=array('id_users'=>session()->get('id'));
         $data ['manda'] = $model->tampil('users'); 
         $data['levels'] = $model->getLevels(); 
 
 
-        echo view('header');
-        echo view('menu');
+        echo view('header',$data);
+        echo view('menu',$data);
         echo view('t_u',$data);
         echo view('footer');
          }else{
@@ -1130,51 +1324,184 @@ public function reset_password()
         session()->destroy();
         return redirect()->to('login', $data);
     }
+    public function generateCaptcha()
+    {
+        // Create a string of possible characters
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        $captcha_code = '';
+        
+        // Generate a random CAPTCHA code with letters and numbers
+        for ($i = 0; $i < 6; $i++) {
+            $captcha_code .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        
+        // Store CAPTCHA code in session
+        session()->set('captcha_code', $captcha_code);
+        
+        // Create an image for CAPTCHA
+        $image = imagecreate(120, 40); // Increased size for better readability
+        $background = imagecolorallocate($image, 200, 200, 200);
+        $text_color = imagecolorallocate($image, 0, 0, 0);
+        $line_color = imagecolorallocate($image, 64, 64, 64);
+        
+        imagefilledrectangle($image, 0, 0, 120, 40, $background);
+        
+        // Add some random lines to the CAPTCHA image for added complexity
+        for ($i = 0; $i < 5; $i++) {
+            imageline($image, rand(0, 120), rand(0, 40), rand(0, 120), rand(0, 40), $line_color);
+        }
+        
+        // Add the CAPTCHA code to the image
+        imagestring($image, 5, 20, 10, $captcha_code, $text_color);
+        
+        // Output the CAPTCHA image
+        header('Content-type: image/png');
+        imagepng($image);
+        imagedestroy($image);
+    }
+    
+    
     public function aksi_login()
 {
-    $u = $this->request->getPost('nama_users');
+    $session = session();
+    $model = new M_trader();
+    $u = $this->request->getPost('username');
     $p = $this->request->getPost('password');
 
-    $where = [
-        'nama_users' => $u,
-        'password' => md5($p),
-    ];
-    
-    $model = new \App\Models\UsersModel();
-    $cek = $model->where($where)->first();
-
-    if ($cek) {
-        session()->set('nama_users', $cek['nama_users']);
-        session()->set('id_users', $cek['id_users']);
-        session()->set('level', $cek['id_level']);
-        
-        // Catat login
-        $loginModel = new \App\Models\HsLoginModel();
-        $loginData = [
-            'id_users' => $cek['id_users'],
-            'nama_users' => $cek['nama_users'], // Menambahkan nama_users
-            'login_time' => date('Y-m-d H:i:s'),
-        ];
-        $loginModel->insert($loginData);
-
-        return redirect()->to('home/dashboard');
+    // Periksa koneksi internet
+    if (!$this->checkInternetConnection()) {
+        // Jika tidak ada koneksi, cek CAPTCHA gambar
+        $captcha_code = $this->request->getPost('captcha_code');
+        if ($session->get('captcha_code') !== $captcha_code) {
+            $session->setFlashdata('toast_message', 'Invalid CAPTCHA');
+            $session->setFlashdata('toast_type', 'danger');
+            return redirect()->to('home/login');
+        }
     } else {
-        return redirect()->to('home/login');
+        // Jika ada koneksi, cek Google reCAPTCHA
+        $recaptchaResponse = trim($this->request->getPost('g-recaptcha-response'));
+        $secret = '6Lc3hiAqAAAAAF_9qCtiHo9IdUW8zlzjMQIETuPV'; // Ganti dengan Secret Key Anda
+        $credential = array(
+            'secret' => $secret,
+            'response' => $recaptchaResponse
+        );
+
+        $verify = curl_init();
+        curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+        curl_setopt($verify, CURLOPT_POST, true);
+        curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($credential));
+        curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($verify);
+        curl_close($verify);
+
+        $status = json_decode($response, true);
+
+        if (!$status['success']) {
+            $session->setFlashdata('toast_message', 'Captcha validation failed');
+            $session->setFlashdata('toast_type', 'danger');
+            return redirect()->to('home/login');
+        }
+    }
+    $hashedPassword = password_hash($p, PASSWORD_DEFAULT);
+    // Proses login seperti biasa
+    $user = $model->getWheres('users', ['nama_users' => $u]);
+
+    if ($user) {
+        $lock_time = $user['lock_time'];
+        $current_time = date('Y-m-d H:i:s');
+
+        // Check if account is locked
+        if ($lock_time && strtotime($current_time) < strtotime($lock_time) + 5 * 60) { // 5 minutes lock
+            $remaining_time = (strtotime($lock_time) + 5 * 60) - strtotime($current_time);
+            $minutes = floor($remaining_time / 60);
+            $seconds = $remaining_time % 60;
+            $session->setFlashdata('toast_message', "Akun terkunci. Coba lagi dalam $minutes menit dan $seconds detik.");
+            $session->setFlashdata('toast_type', 'danger');
+            return redirect()->to('home/login');
+        }
+        $where = array(
+            'nama_users' => $u,
+            'password' => md5($p),
+        );
+    
+        $cek = $model->getWhere('users', $where);
+
+        // Validate password using password_verify
+        if ($cek) {
+            // Reset login attempts on successful login
+            $model->edit('users', ['login_attempts' => 0, 'lock_time' => null], ['id_users' => $user['id_users']]);
+        
+            $session->set('nama', $user['nama_users']);
+            $session->set('id', $user['id_users']);
+            $session->set('level', $user['id_level']);
+            return redirect()->to('home/dashboard');
+        } else {
+            $word = 'Password salah';
+
+    // Pass the $word variable to the view
+    $data = [
+        'word' => $word
+    ];
+        echo view('header');
+        echo view('login', $data);
+        echo view('footer');
+            // // Increment login attempts
+            // $attempts = $user['login_attempts'] + 1;
+            // $data = ['login_attempts' => $attempts];
+
+            // // Lock account if 3 attempts reached
+            // if ($attempts >= 3) {
+            //     $data['lock_time'] = date('Y-m-d H:i:s');
+            //     $session->setFlashdata('toast_message', 'Akun terkunci karena 3 kali percobaan gagal. Coba lagi setelah 5 menit.');
+            // } else {
+            //     $session->setFlashdata('toast_message', 'Password salah. Percobaan ke-' . $attempts);
+            // }
+
+            // $model->edit('users', $data, ['id_users' => $user['id_users']]);
+            // $session->setFlashdata('toast_type', 'danger');
+            // return redirect()->to('home/login');
+        }
+    } else {
+        // $session->setFlashdata('toast_message', 'Nama pengguna tidak ditemukan');
+        $word = 'Nama pengguna tidak ditemukan';
+
+    // Pass the $word variable to the view
+    $data = [
+        'word' => $word
+    ];
+        echo view('header');
+        echo view('login', $data);
+        echo view('footer');
+        // return redirect()->to('home/login');
     }
 }
 
+
+    
+    public function checkInternetConnection()
+    {
+        $connected = @fsockopen("www.google.com", 80);
+        if ($connected) {
+            fclose($connected);
+            return true;
+        } else {
+            return false;
+        }
+    }
    
 public function logonama() {
     if (session()->get('level') == 1 || session()->get('level') == 0) {
         $model = new M_trader();
-        
+        $where = array('id_pt' => 2);
+        $data['setting'] = $model->getwhere('pt',$where); 
         // Menentukan id_toko yang ingin diambil
         $id = 1; // id_toko yang diinginkan
         
         // Mengambil data dari tabel 'toko' berdasarkan id_toko
         $data['setting'] = $model->getWhere('toko', ['id_toko' => $id]);
         
-        echo view('header');
+        echo view('header',$data);
         echo view('menu', $data);
         echo view('setting', $data);
         echo view('footer', $data);
@@ -1278,6 +1605,16 @@ public function riwayat_login()
     
 }
 
+public function activity(){
+    $model = new M_trader();
+    $where = array('id_pt' => 2);
+    $data['setting'] = $model->getwhere('pt',$where);
+    $data['activity'] = $model->join('activity','users','activity.id_user = users.id_users');
+    echo view('menu',$data);
+    echo view('header',$data);
+    echo view('activity', $data);
+}
+
 
 
     public function aksi_hs()
@@ -1321,6 +1658,37 @@ public function riwayat_login()
     } else {
         return redirect()->to('home/login');
     }
+}
+
+public function restoreupbarang($id)
+{
+    $model = new M_trader();
+
+    // Restore product data
+    $model->restoreProduct('barang_keluar_backup','id_brg',$id);
+	// $this->updatelog('User Restore Updated Data Barang');
+    return redirect()->to('home/barang');
+}
+
+public function sdbarang($id)
+{
+		$model = new M_trader;
+		// Ubah status transaksi menjadi "habis" di kedua tabel
+		// $this->log_activity('User Soft Delete Keranjang');
+		$model->softdelete1('barang','id_brg',$id);
+
+		// Kirim respons (jika diperlukan)
+		return redirect()->to('home/barang');
+}
+
+public function rsbarang($id){
+    $model = new M_trader;
+    // Pass the where condition directly to the softdelete() function
+    $model->restore1('barang','id_brg',$id);
+    // $this->log_activity('User Restore Data Barang');
+    // print_r($id);
+    // Redirect to 'home/recyclebin'
+    return redirect()->to('home/barangrestore');
 }
 
    } 
